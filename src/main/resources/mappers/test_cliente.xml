@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sidet.idat.ws.medisalud.repository.TestClienteRepositoryXML" >
+
+  <resultMap id="resultTestClienteV1" type="TestCliente" >
+    <result column="test_cliente_id" property="testClienteId"/>
+    <result column="numero_documento" property="numeroDocumento"/>
+    <result column="test_tipo_cliente_id" property="testTipoCliente.testTipoClienteId"/>
+    <result column="tipo" property="testTipoCliente.tipo"/>
+    <association property="testDireccionCliente" column="test_cliente_id"
+    	javaType="TestTipoCliente" select="buscarTestTipoCliente"/>
+  </resultMap>
+  
+  <sql id="columnasV1">*</sql>
+  
+  <select id="listarTodos" resultMap="resultTestClienteV1">
+      select * from tb_test_clientes ttc 
+      inner join tb_test_tipo_cliente tttc on tttc.test_tipo_cliente_id = ttc.test_tipo_cliente_id
+      order by test_cliente_id 
+  </select>
+  
+  <insert id="registrar" parameterType="TestCliente">
+	<selectKey keyProperty="testClienteId" keyColumn="test_cliente_id" resultType="int" order="AFTER" statementType="STATEMENT">
+		SELECT LAST_INSERT_ID() as testClienteId	
+	</selectKey>
+  	INSERT INTO tb_test_clientes (nombre, numero_documento, test_tipo_cliente_id)
+	VALUES(#{nombre}, #{numeroDocumento}, #{testTipoCliente.testTipoClienteId})
+  </insert>
+  
+  <update id="actualizar">
+  	UPDATE tb_test_clientes 
+  		SET nombre=#{nombre}, test_tipo_cliente_id= #{testTipoCliente.testTipoClienteId} 
+  		WHERE test_cliente_id=#{testClienteId}
+  </update>
+  
+  <delete id="eliminar">
+  	DELETE FROM tb_test_clientes WHERE test_cliente_id=#{testClienteId}
+  </delete>
+  
+  <select id="buscarPorId" resultMap="resultTestClienteV1">
+  	select * from tb_test_clientes ttc 
+  	inner join tb_test_tipo_cliente tttc on tttc.test_tipo_cliente_id = ttc.test_tipo_cliente_id 
+  	where ttc.test_cliente_id = #{testClienteId} 
+  </select>
+  
+  <select id="listarPaginado" resultMap="resultTestClienteV1">
+  	select * from tb_test_clientes ttc
+	inner join tb_test_tipo_cliente tttc on tttc.test_tipo_cliente_id = ttc.test_tipo_cliente_id
+	order by test_cliente_id
+	limit #{inicio},#{fin}
+  </select>
+  
+  <select id="contarTotalFilas">
+  	select count(ttc.test_cliente_id) as total_filas from tb_test_clientes ttc
+  </select>
+  
+  <resultMap id="resultTestDireccionClienteV1" type="TestDireccionCliente" >
+    <result column="test_direccion_cliente_id" property="testDireccionClienteId"/>
+  </resultMap>
+  
+  <select id="buscarTestTipoCliente" resultMap="resultTestDireccionClienteV1">
+  	select * from tb_test_direccion_cliente ttdc 
+  	where ttdc.test_cliente_id = #{testClienteId} limit 1
+  </select>
+  
+  
+</mapper>

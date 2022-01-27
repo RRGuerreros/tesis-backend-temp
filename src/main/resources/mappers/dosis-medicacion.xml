@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sidet.idat.ws.medisalud.repository.DosisMedicacionRepository" >
+  
+  <select id="alertarDosisPacientes" resultType="int">
+    select thc.paciente_id from tb_medicacion tm
+	inner join tb_detalle_medicacion tdm on tdm.medicacion_id = tm.medicacion_id
+	inner join tb_dosis_medicacion tdm2 on tdm2.detalle_medicacion_id = tdm.detalle_medicacion_id and tdm.siguiente_dosis = tdm2.numero_dosis 
+	inner join tb_historia_clinica thc on thc.historia_clinica_id = tm.historia_clinica_id 
+	where thc.paciente_id in
+	 
+    <foreach item="item" index="index" collection="pacientesIds" open="(" separator="," close=")">
+    #{item}
+    </foreach>
+    
+	and year(tdm2.fecha_dosis) &lt;= year(NOW())
+	and month(tdm2.fecha_dosis) &lt;= month(NOW())
+	and day(tdm2.fecha_dosis) &lt;= day(NOW())
+	and Date_format(tdm2.fecha_dosis,'%H:%i') &lt;= Date_format(now(),'%H:%i')
+  </select>
+    
+</mapper>
